@@ -1,20 +1,28 @@
-// standard.vert
+/**
+ * @file standard.vert
+ * @brief Vertex shader for textured and minimalist-style blocks.
+ * @project Gladly Voxel Sandbox
+ */
+
 precision mediump float;
 
-// Incoming attributes from your VBO (Vertex Buffer Object)
-attribute vec3 aPosition;
-attribute vec2 aTexCoord;
+// Vertex attributes (data coming from your Mesh/VBO)
+attribute vec3 aPosition;   // Local model-space position
+attribute vec2 aTexCoord;   // UV map for textures
+attribute float aShadow;    // Baked ambient occlusion (0.0 to 1.0)
 
-// Uniforms for the camera and chunk positioning
+// Uniforms (constants for the whole draw call)
 uniform mat4 uModelViewProjection;
 
-// Pass these to the fragment shader
+// Varyings (passed to the fragment shader)
 varying vec2 vTexCoord;
+varying float vShadow;
 
 void main() {
-    // Send the texture coordinate to the fragment shader
+    // Pass UVs and Shadow values to the fragment shader
     vTexCoord = aTexCoord;
+    vShadow = aShadow;
     
-    // Transform vertex position by the combined camera matrices
+    // Transform position into screen space
     gl_Position = uModelViewProjection * vec4(aPosition, 1.0);
 }

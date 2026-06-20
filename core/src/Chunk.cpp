@@ -6,9 +6,9 @@ Chunk::Chunk() {
 
 void Chunk::generateTerrain() {
     // A simple flat world starter generator
-    for (int x = 0; x < CHUNK_WIDTH; x++) {
+    for (int y = 0; y < CHUNK_HEIGHT; y++) {
         for (int z = 0; z < CHUNK_WIDTH; z++) {
-            for (int y = 0; y < CHUNK_HEIGHT; y++) {
+            for (int x = 0; x < CHUNK_WIDTH; x++) {
                 int index = getIndex(x, y, z);
                 if (y == 5) {
                     blocks[index] = Blocks::grass;

@@ -20,7 +20,7 @@
 
 class ChunkFactory {
 private:
-    int worldSeed;
+    uint64_t worldSeed;
     std::unique_ptr<WorldGenerator> terrainGenerator;
     std::unique_ptr<CloudGenerator> cloudGenerator;
 
@@ -29,7 +29,7 @@ public:
      * @brief Initializes the automated factory with a unified generation seed.
      * @param seed The world seed used to sync landscapes and clouds.
      */
-    ChunkFactory(int seed);
+    ChunkFactory(uint64_t seed);
 
     /**
      * @brief Automatically allocates and generates a complete 3D chunk data block.

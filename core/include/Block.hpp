@@ -78,12 +78,12 @@ public:
         registry[block.id] = block;
     }
 
-    const BlockDefinition& get(BlockID id) {
+    const BlockDefinition& get(BlockID id) const {
         auto it = registry.find(id);
         if (it != registry.end()) {
             return it->second;
         }
-        return registry[Blocks::air];
+        return registry.at(Blocks::air);
     }
 
     /**

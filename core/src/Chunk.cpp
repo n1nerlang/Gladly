@@ -6,18 +6,18 @@ Chunk::Chunk() {
 
 void Chunk::generateTerrain() {
     // A simple flat world starter generator
-    for (int x = 0; x < CHUNK_SIZE; x++) {
-        for (int z = 0; z < CHUNK_SIZE; z++) {
-            for (int y = 0; y < CHUNK_SIZE; y++) {
+    for (int x = 0; x < CHUNK_WIDTH; x++) {
+        for (int z = 0; z < CHUNK_WIDTH; z++) {
+            for (int y = 0; y < CHUNK_HEIGHT; y++) {
                 int index = getIndex(x, y, z);
                 if (y == 5) {
-                    blocks[index] = GRASS;
+                    blocks[index] = Blocks::grass;
                 } else if (y < 5 && y > 2) {
-                    blocks[index] = DIRT;
+                    blocks[index] = Blocks::dirt;
                 } else if (y <= 2) {
-                    blocks[index] = STONE;
+                    blocks[index] = Blocks::stone;
                 } else {
-                    blocks[index] = AIR;
+                    blocks[index] = Blocks::air;
                 }
             }
         }
@@ -26,45 +26,44 @@ void Chunk::generateTerrain() {
 
 bool Chunk::isBlockTransparent(int x, int y, int z) const {
     // If the neighbor is outside this chunk boundaries, assume air for now
-    if (x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
+    if (x < 0 || x >= CHUNK_WIDTH || y < 0 || y >= CHUNK_HEIGHT || z < 0 || z >= CHUNK_WIDTH) {
         return true;
     }
-    return blocks[getIndex(x, y, z)] == AIR;
+    BlockID id = blocks[getIndex(x, y, z)];
+    return BlockRegistry::getInstance().get(id).isTransparent;
 }
 
 void Chunk::generateMesh() {
     meshVertices.clear();
 
-    for (int x = 0; x < CHUNK_SIZE; x++) {
-        for (int y = 0; y < CHUNK_SIZE; y++) {
-            for (int z = 0; z < CHUNK_SIZE; z++) {
-                BlockType currentBlock = blocks[getIndex(x, y, z)];
+    for (int x = 0; x < CHUNK_WIDTH; x++) {
+        for (int y = 0; y < CHUNK_HEIGHT; y++) {
+            for (int z = 0; z < CHUNK_WIDTH; z++) {
+                BlockID currentBlock = blocks[getIndex(x, y, z)];
                 
-                if (currentBlock == AIR) continue;
+                if (currentBlock == Blocks::air) continue;
 
                 float fx = static_cast<float>(x);
                 float fy = static_cast<float>(y);
                 float fz = static_cast<float>(z);
 
-                // CRITICAL MOBILE OPTIMIZATION: Face Culling
-                
-                // 1. Check Top Face (Y + 1)
+                // 1. Top Face (Y + 1)
                 if (isBlockTransparent(x, y + 1, z)) {
                     meshVertices.push_back({fx,     fy+1.0f, fz,      0.0f, 0.0f});
-                    meshVertices.push_back({fx+1.0f, fy+1.0f, fz,      1.0f, 0.0f});
-                    meshVertices.push_back({fx+1.0f, fy+1.0f, fz+1.0f, 1.0f, 1.0f});
                     meshVertices.push_back({fx,     fy+1.0f, fz+1.0f, 0.0f, 1.0f});
+                    meshVertices.push_back({fx+1.0f, fy+1.0f, fz+1.0f, 1.0f, 1.0f});
+                    meshVertices.push_back({fx+1.0f, fy+1.0f, fz,      1.0f, 0.0f});
                 }
 
-                // 2. Check Bottom Face (Y - 1)
+                // 2. Bottom Face (Y - 1)
                 if (isBlockTransparent(x, y - 1, z)) {
                     meshVertices.push_back({fx,     fy,      fz,      0.0f, 0.0f});
-                    meshVertices.push_back({fx,     fy,      fz+1.0f, 0.0f, 1.0f});
-                    meshVertices.push_back({fx+1.0f, fy,      fz+1.0f, 1.0f, 1.0f});
                     meshVertices.push_back({fx+1.0f, fy,      fz,      1.0f, 0.0f});
+                    meshVertices.push_back({fx+1.0f, fy,      fz+1.0f, 1.0f, 1.0f});
+                    meshVertices.push_back({fx,     fy,      fz+1.0f, 0.0f, 1.0f});
                 }
 
-                // 3. Check Front Face (Z + 1)
+                // 3. Front Face (Z + 1)
                 if (isBlockTransparent(x, y, z + 1)) {
                     meshVertices.push_back({fx,     fy,      fz+1.0f, 0.0f, 0.0f});
                     meshVertices.push_back({fx+1.0f, fy,      fz+1.0f, 1.0f, 0.0f});
@@ -72,7 +71,29 @@ void Chunk::generateMesh() {
                     meshVertices.push_back({fx,     fy+1.0f, fz+1.0f, 0.0f, 1.0f});
                 }
 
-                // [Repeat similar checks for Back (Z-1), Left (X-1), and Right (X+1) faces]
+                // 4. Back Face (Z - 1)
+                if (isBlockTransparent(x, y, z - 1)) {
+                    meshVertices.push_back({fx+1.0f, fy,      fz,      0.0f, 0.0f});
+                    meshVertices.push_back({fx,     fy,      fz,      1.0f, 0.0f});
+                    meshVertices.push_back({fx,     fy+1.0f, fz,      1.0f, 1.0f});
+                    meshVertices.push_back({fx+1.0f, fy+1.0f, fz,      0.0f, 1.0f});
+                }
+
+                // 5. Left Face (X - 1)
+                if (isBlockTransparent(x - 1, y, z)) {
+                    meshVertices.push_back({fx,     fy,      fz,      0.0f, 0.0f});
+                    meshVertices.push_back({fx,     fy,      fz+1.0f, 1.0f, 0.0f});
+                    meshVertices.push_back({fx,     fy+1.0f, fz+1.0f, 1.0f, 1.0f});
+                    meshVertices.push_back({fx,     fy+1.0f, fz,      0.0f, 1.0f});
+                }
+
+                // 6. Right Face (X + 1)
+                if (isBlockTransparent(x + 1, y, z)) {
+                    meshVertices.push_back({fx+1.0f, fy,      fz+1.0f, 0.0f, 0.0f});
+                    meshVertices.push_back({fx+1.0f, fy,      fz,      1.0f, 0.0f});
+                    meshVertices.push_back({fx+1.0f, fy+1.0f, fz,      1.0f, 1.0f});
+                    meshVertices.push_back({fx+1.0f, fy+1.0f, fz+1.0f, 0.0f, 1.0f});
+                }
             }
         }
     }

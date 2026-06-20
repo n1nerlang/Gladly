@@ -3,17 +3,12 @@
 
 #include <vector>
 #include <cstdint>
+#include "Block.hpp"
 
-// 16x16x16 dimensions are ideal for mobile cache alignment
-const int CHUNK_SIZE = 16;
-const int CHUNK_VOLUME = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
-
-enum BlockType : uint8_t {
-    AIR = 0,
-    DIRT = 1,
-    GRASS = 2,
-    STONE = 3
-};
+// 16x16x128 dimensions are standard for the engine
+const int CHUNK_WIDTH = 16;
+const int CHUNK_HEIGHT = 128;
+const int CHUNK_VOLUME = CHUNK_WIDTH * CHUNK_WIDTH * CHUNK_HEIGHT;
 
 struct Vertex {
     float x, y, z;
@@ -22,12 +17,12 @@ struct Vertex {
 
 class Chunk {
 private:
-    BlockType blocks[CHUNK_VOLUME];
+    BlockID blocks[CHUNK_VOLUME];
     std::vector<Vertex> meshVertices;
 
     // Helper to convert 3D coordinates to flat 1D array index
     inline int getIndex(int x, int y, int z) const {
-        return x + (y * CHUNK_SIZE) + (z * CHUNK_SIZE * CHUNK_SIZE);
+        return x + (z * CHUNK_WIDTH) + (y * CHUNK_WIDTH * CHUNK_WIDTH);
     }
 
 public:
